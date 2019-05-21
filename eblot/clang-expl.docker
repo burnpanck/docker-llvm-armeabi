@@ -1,0 +1,17 @@
+FROM alpine:v3.9.0
+
+LABEL description="Compiler Explorer for LLVM/Clang toolchain"
+LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
+WORKDIR /
+
+RUN apk update
+RUN apk add alpine-sdk git nodejs npm python3
+RUN git clone https://github.com/mattgodbolt/compiler-explorer.git
+COPY host/docker/src/config/c.local.properties compiler-explorer/etc/config/
+WORKDIR /compiler-explorer
+RUN make dist
+
+# docker build -f host/docker/src/clang-expl.docker -t clang-expl:v7 .
+# host/bin/dockexec.sh --env clang-expl:v7 --port 10240
+#   (cd /compiler-explorer && make)
+# http://localhost:10240

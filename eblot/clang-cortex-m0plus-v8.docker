@@ -1,0 +1,75 @@
+FROM newlib:v3.1.0 as source
+
+FROM clang-aarch32:v8 as builder
+RUN apk update
+RUN apk add build-base ninja cmake git patch vim python2 curl
+COPY --from=source /toolchain/compiler-rt /toolchain/compiler-rt
+COPY --from=source /toolchain/newlib /toolchain/newlib
+WORKDIR /toolchain
+
+ENV CLANG8PATH=/usr/local/clang8
+ENV XTARGET=armv6m-none-eabi
+ENV XCPU=cortex-m0+
+ENV XCPUDIR=cortex-m0plus
+ENV PATH=$PATH:${CLANG8PATH}/bin
+LABEL description="Build Cortex-M0+ libraries"
+LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
+
+WORKDIR /toolchain/compiler-rt
+RUN curl https://gist.githubusercontent.com/eblot/5aa9d7e283e84d72442449669ad71580/raw/bec95b92e470377ac374c63a9609b83785768da8/compiler_rt-cortex-m.diff | patch -p1
+
+WORKDIR /toolchain/newlib
+RUN curl https://github.com/eblot/newlib-cygwin/commit/ef7efeb7ec8ca067d07d00c2c8aabb3fdb124440.diff | patch -p1
+
+WORKDIR /toolchain/build/newlib
+ENV CC_FOR_TARGET=${CLANG8PATH}/bin/clang
+ENV AR_FOR_TARGET=${CLANG8PATH}/bin/llvm-ar
+ENV NM_FOR_TARGET=${CLANG8PATH}/bin/llvm-nm
+ENV RANLIB_FOR_TARGET=${CLANG8PATH}/bin/llvm-ranlib
+ENV READELF_FOR_TARGET=${CLANG8PATH}/bin/llvm-readelf
+ENV CFLAGS_FOR_TARGET="-target ${XTARGET} -mcpu=${XCPU} -mthumb -mabi=aapcs -g -O3 -ffunction-sections -fdata-sections -Wno-unused-command-line-argument"
+ENV AS_FOR_TARGET="${CLANG8PATH}/bin/clang"
+RUN /toolchain/newlib/configure \
+    --host=`cc -dumpmachine` \
+    --build=`cc -dumpmachine` \
+    --target=${XTARGET} \
+    --prefix=${CLANG8PATH}/${XTARGET}/${XCPUDIR} \
+    --disable-newlib-supplied-syscalls \
+    --enable-newlib-reent-small \
+    --disable-newlib-fvwrite-in-streamio \
+    --disable-newlib-fseek-optimization \
+    --disable-newlib-wide-orient \
+    --enable-newlib-nano-malloc \
+    --disable-newlib-unbuf-stream-opt \
+    --enable-lite-exit \
+    --enable-newlib-global-atexit \
+    --disable-newlib-nano-formatted-io \
+    --disable-newlib-fvwrite-in-streamio \
+    --enable-newlib-io-c99-formats \
+    --disable-newlib-io-float \
+    --disable-nls
+RUN make
+RUN make install
+RUN mv ${CLANG8PATH}/${XTARGET}/${XCPUDIR}/${XTARGET}/* ${CLANG8PATH}/${XTARGET}/${XCPUDIR}/
+RUN rmdir ${CLANG8PATH}/${XTARGET}/${XCPUDIR}/${XTARGET}
+
+WORKDIR /toolchain/build/compiler_rt
+RUN cmake -G Ninja -DXTARGET=${XTARGET} -DXCPU=${XCPU} -DXCPUDIR=${XCPUDIR} \
+    /toolchain/compiler-rt/cortex-m
+RUN ninja
+RUN cp libcompiler_rt.a ${CLANG8PATH}/${XTARGET}/${XCPUDIR}/lib/
+WORKDIR /
+
+FROM alpine:v3.9.2
+LABEL description="Cortex-M0+ environment"
+LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
+ENV CLANG8PATH=/usr/local/clang8
+ENV XTARGET=armv6m-none-eabi
+ENV XCPUDIR=cortex-m0plus
+COPY --from=builder ${CLANG8PATH}/${XTARGET}/${XCPUDIR} \
+     ${CLANG8PATH}/${XTARGET}/${XCPUDIR}
+WORKDIR /
+
+# docker build -f host/docker/src/clang-cortex-m0plus-v8.docker -t clang-cortex-m0plus:v8 .
+# docker tag clang-cortex-m0plus:v8 ${DOCKERHUB_USER}/clang-cortex-m0plus:v8
+# docker push ${DOCKERHUB_USER}/clang-cortex-m0plus:v8

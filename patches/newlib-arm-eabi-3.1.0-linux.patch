@@ -1,0 +1,81 @@
+diff --git a/libgloss/arm/Makefile.in b/libgloss/arm/Makefile.in
+index e1bad17..86cfef1 100644
+--- a/libgloss/arm/Makefile.in
++++ b/libgloss/arm/Makefile.in
+@@ -35,10 +35,6 @@ MULTICLEAN = true
+ MULTI_FLAGS_FOR_TARGET = MULTI_DEFAULT_FLAGS
+ MULTI_DEFAULT_FLAGS = -DSEMIHOST_V2
+ 
+-MULTIDIRS += semihv2m
+-MULTIDIR_semihv2m_FLAGS = $(MULTI_DEFAULT_FLAGS) -DSEMIHOST_V2_MIXED_MODE
+-MULTIDIR_semihv2m_NAME = -v2m
+-
+ SHELL =	/bin/sh
+ 
+ CC = @CC@
+@@ -48,8 +44,6 @@ AR = @AR@
+ LD = @LD@
+ RANLIB = @RANLIB@
+ 
+-SUBDIRS = @subdirs@
+-
+ OBJDUMP = `if [ -f ${objroot}/../binutils/objdump ] ; \
+ 	then echo ${objroot}/../binutils/objdump ; \
+ 	else t='$(program_transform_name)'; echo objdump | sed -e $$t ; fi`
+@@ -109,7 +103,7 @@ INCLUDES += `if [ -d ${objroot}/newlib ]; then echo -I$(srcroot)/newlib/libc/mac
+ # build a test program for each target board. Just trying to get
+ # it to link is a good test, so we ignore all the errors for now.
+ #
+-all: ${CRT0} ${LINUX_CRT0} ${LINUX_BSP} ${REDBOOT_CRT0} ${REDBOOT_OBJS} ${RDPMON_CRT0} ${RDPMON_BSP} ${RDIMON_CRT0} ${RDIMON_BSP}
++all: ${CRT0}
+ 	@rootpre=`pwd`/; export rootpre; \
+ 	srcrootpre=`cd $(srcdir); pwd`/; export srcrootpre; \
+ 	for dir in .. ${SUBDIRS}; do \
+@@ -206,7 +200,7 @@ distclean maintainer-clean realclean: clean
+ 	rm -f Makefile config.status *~
+ 
+ .PHONY: install info install-info clean-info
+-install: ${CRT0_INSTALL} ${LINUX_INSTALL} ${REDBOOT_INSTALL} ${RDPMON_INSTALL} ${RDIMON_INSTALL} ${IQ80310_INSTALL}  ${PID_INSTALL} ${NANO_INSTALL}
++install: ${CRT0_INSTALL} ${NANO_INSTALL}
+ 	@rootpre=`pwd`/; export rootpre; \
+ 	srcrootpre=`cd $(srcdir); pwd`/; export srcrootpre; \
+ 	for dir in .. ${SUBDIRS}; do \
+diff --git a/libgloss/libnosys/configure b/libgloss/libnosys/configure
+index 7c23c7a..88f3142 100755
+--- a/libgloss/libnosys/configure
++++ b/libgloss/libnosys/configure
+@@ -2058,7 +2058,7 @@ case "${target}" in
+ esac
+ 
+ case "${target}" in
+-  *-*-elf)
++  *-*-elf | *-*-eabi*)
+         $as_echo "#define HAVE_ELF 1" >>confdefs.h
+ 
+ 
+diff --git a/libgloss/libnosys/configure.in b/libgloss/libnosys/configure.in
+index 8908217..5ced9b0 100644
+--- a/libgloss/libnosys/configure.in
++++ b/libgloss/libnosys/configure.in
+@@ -92,7 +92,7 @@ esac
+ 
+ dnl Make sure we know if elf format used
+ case "${target}" in
+-  *-*-elf)
++  *-*-elf | *-*-eabi*)
+         AC_DEFINE(HAVE_ELF)
+ 
+         AC_CACHE_CHECK([for .previous assembler directive],
+diff --git a/newlib/libc/include/stdio.h b/newlib/libc/include/stdio.h
+index 164d95b..0f41a86 100644
+--- a/newlib/libc/include/stdio.h
++++ b/newlib/libc/include/stdio.h
+@@ -690,7 +690,7 @@ _ELIDABLE_INLINE int __sputc_r(struct _reent *_ptr, int _c, FILE *_p) {
+ 	  __sputc_r (_ptr, '\r', _p);
+ #endif
+ 	if (--_p->_w >= 0 || (_p->_w >= _p->_lbfsize && (char)_c != '\n'))
+-		return (*_p->_p++ = _c);
++		return (*_p->_p++ = (unsigned char)_c);
+ 	else
+ 		return (__swbuf_r(_ptr, _c, _p));
+ }

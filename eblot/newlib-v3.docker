@@ -1,0 +1,23 @@
+FROM alpine:v3.9.2
+LABEL description="Store Git repository for newlib & C runtime libraries"
+LABEL maintainer="Emmanuel Blot <emmanuel.blot@free.fr>"
+RUN apk update
+RUN apk add curl
+WORKDIR /toolchain
+RUN curl -LO https://releases.llvm.org/8.0.0/compiler-rt-8.0.0.src.tar.xz && \
+    [ "b435c7474f459e71b2831f1a4e3f1d21203cb9c0172e94e9d9b69f50354f21b1" = \
+      "$(sha256sum compiler-rt-8.0.0.src.tar.xz | cut -d' ' -f1)" ] && \
+    tar xf compiler-rt-8.0.0.src.tar.xz && \
+    mv compiler-rt-8.0.0.src compiler-rt
+RUN curl -LO ftp://sourceware.org/pub/newlib/newlib-3.1.0.tar.gz && \
+     [ "fb4fa1cc21e9060719208300a61420e4089d6de6ef59cf533b57fe74801d102a" = \
+       "$(sha256sum newlib-3.1.0.tar.gz | cut -d' ' -f1)" ] && \
+     tar xf newlib-3.1.0.tar.gz && \
+     mv newlib-3.1.0 newlib
+RUN curl -LO https://gist.githubusercontent.com/eblot/aee6e715ef064ce936a11e8b6eedad1b/raw/075cb76a5efa8563424fb1d52163aaab273a2889/newlib-arm-eabi-3.1.0-linux.patch && \
+     [ "57d07f805b3ff6741e3130488b1ca2acfb0d185390dfac3db0185deb0d478b2f" = \
+       "$(sha256sum newlib-arm-eabi-3.1.0-linux.patch | cut -d' ' -f1)" ] && \
+       (cd newlib && patch -p1 < ../newlib-arm-eabi-3.1.0-linux.patch)
+WORKDIR /
+
+# docker build -f host/docker/src/newlib-v3.docker -t newlib:v3.1.0 .

@@ -1,0 +1,228 @@
+# goes into cortex-m/CMakeLists.txt
+CMAKE_MINIMUM_REQUIRED (VERSION 3.4)
+
+PROJECT (builtins C ASM)
+
+IF (NOT XTARGET)
+  MESSAGE (FATAL_ERROR "XTARGET not defined")
+ENDIF ()
+IF (NOT XCPU)
+  MESSAGE (FATAL_ERROR "XCPU not defined")
+ENDIF ()
+IF (NOT XCPUDIR)
+	MESSAGE (FATAL_ERROR "XCPUDIR not defined")
+ENDIF ()
+IF (NOT XCLANG)
+	MESSAGE (FATAL_ERROR "XCLANG not defined")
+ENDIF ()
+
+
+
+# FIND_PROGRAM (xclang clang)
+SET(xclang ${XCLANG})
+
+message(INFO " Compiler is ${xclang}")
+
+GET_FILENAME_COMPONENT (XTOOLCHAIN_BIN ${xclang} DIRECTORY)
+GET_FILENAME_COMPONENT (XTOOLCHAIN_ROOT ${XTOOLCHAIN_BIN} DIRECTORY)
+
+INCLUDE_DIRECTORIES (${XTOOLCHAIN_ROOT}/${XTARGET}/${XCPUDIR}/include)
+
+message(INFO " Toolchain root path is at ${XTOOLCHAIN_ROOT}")
+
+SET (CMAKE_ASM_COMPILER_ID Clang)
+SET (CMAKE_C_COMPILER_ID Clang)
+SET (CMAKE_CXX_COMPILER_ID Clang)
+
+SET (CMAKE_C_COMPILER_FORCED TRUE)
+SET (CMAKE_C_COMPILER ${xclang})
+SET (CMAKE_ASM_COMPILER ${xclang})
+SET (CMAKE_AR llvm-ar)
+SET (CMAKE_RANLIB llvm-ranlib)
+
+SET (XCC_SYSROOT "-isysroot ${XTOOLCHAIN_ROOT}")
+
+SET (XCFLAGS "-target ${XTARGET} -mcpu=${XCPU} -mthumb -mabi=aapcs -g -O3 ${XCFLAGS}")
+SET (CMAKE_C_FLAGS "${XCFLAGS} ${XCC_SYSROOT} -fomit-frame-pointer")
+SET (CMAKE_ASM_FLAGS "${XCFLAGS} ${XCC_SYSROOT} -fomit-frame-pointer")
+
+SET (CMAKE_C_CREATE_STATIC_LIBRARY
+     "<CMAKE_AR> rc <TARGET> <LINK_FLAGS> <OBJECTS>"
+     "<CMAKE_RANLIB> <TARGET>")
+SET (CMAKE_CXX_CREATE_STATIC_LIBRARY ${CMAKE_C_CREATE_STATIC_LIBRARY})
+
+SET (CMAKE_NOT_USING_CONFIG_FLAGS 1) # allow custom DEBUG/RELEASE flags
+
+SET (CRT_SRC ${CMAKE_CURRENT_SOURCE_DIR}/..)
+
+ADD_LIBRARY (compiler_rt
+             ${CRT_SRC}/lib/builtins/arm/aeabi_dcmp.S
+             ${CRT_SRC}/lib/builtins/arm/aeabi_fcmp.S
+             ${CRT_SRC}/lib/builtins/arm/aeabi_idivmod.S
+             ${CRT_SRC}/lib/builtins/arm/aeabi_memcmp.S
+             ${CRT_SRC}/lib/builtins/arm/aeabi_memcpy.S
+             ${CRT_SRC}/lib/builtins/arm/aeabi_memmove.S
+             ${CRT_SRC}/lib/builtins/arm/aeabi_memset.S
+             ${CRT_SRC}/lib/builtins/arm/bswapdi2.S
+             ${CRT_SRC}/lib/builtins/arm/bswapsi2.S
+             ${CRT_SRC}/lib/builtins/arm/comparesf2.S
+             ${CRT_SRC}/lib/builtins/arm/divsi3.S
+             ${CRT_SRC}/lib/builtins/arm/sync_synchronize.S
+             ${CRT_SRC}/lib/builtins/arm/udivsi3.S
+             ${CRT_SRC}/lib/builtins/arm/aeabi_cdcmpeq_check_nan.c
+             ${CRT_SRC}/lib/builtins/arm/aeabi_cfcmpeq_check_nan.c
+             ${CRT_SRC}/lib/builtins/arm/aeabi_div0.c
+             ${CRT_SRC}/lib/builtins/arm/aeabi_drsub.c
+             ${CRT_SRC}/lib/builtins/arm/aeabi_frsub.c
+             ${CRT_SRC}/lib/builtins/arm/aeabi_uidivmod.S
+             ${CRT_SRC}/lib/builtins/arm/aeabi_uldivmod.S
+             ${CRT_SRC}/lib/builtins/absvdi2.c
+             ${CRT_SRC}/lib/builtins/absvsi2.c
+             ${CRT_SRC}/lib/builtins/absvti2.c
+             ${CRT_SRC}/lib/builtins/adddf3.c
+             ${CRT_SRC}/lib/builtins/addsf3.c
+             ${CRT_SRC}/lib/builtins/addtf3.c
+             ${CRT_SRC}/lib/builtins/addvdi3.c
+             ${CRT_SRC}/lib/builtins/addvsi3.c
+             ${CRT_SRC}/lib/builtins/addvti3.c
+             ${CRT_SRC}/lib/builtins/ashldi3.c
+             ${CRT_SRC}/lib/builtins/ashlti3.c
+             ${CRT_SRC}/lib/builtins/ashrdi3.c
+             ${CRT_SRC}/lib/builtins/ashrti3.c
+             ${CRT_SRC}/lib/builtins/clear_cache.c
+             ${CRT_SRC}/lib/builtins/clzdi2.c
+             ${CRT_SRC}/lib/builtins/clzsi2.c
+             ${CRT_SRC}/lib/builtins/clzti2.c
+             ${CRT_SRC}/lib/builtins/cmpdi2.c
+             ${CRT_SRC}/lib/builtins/cmpti2.c
+             ${CRT_SRC}/lib/builtins/comparedf2.c
+             ${CRT_SRC}/lib/builtins/comparesf2.c
+             ${CRT_SRC}/lib/builtins/comparetf2.c
+             ${CRT_SRC}/lib/builtins/cpu_model.c
+             ${CRT_SRC}/lib/builtins/ctzdi2.c
+             ${CRT_SRC}/lib/builtins/ctzsi2.c
+             ${CRT_SRC}/lib/builtins/ctzti2.c
+             ${CRT_SRC}/lib/builtins/divdc3.c
+             ${CRT_SRC}/lib/builtins/divdf3.c
+             ${CRT_SRC}/lib/builtins/divdi3.c
+             ${CRT_SRC}/lib/builtins/divmoddi4.c
+             ${CRT_SRC}/lib/builtins/divmodsi4.c
+             ${CRT_SRC}/lib/builtins/divsc3.c
+             ${CRT_SRC}/lib/builtins/divsf3.c
+             ${CRT_SRC}/lib/builtins/divtc3.c
+             ${CRT_SRC}/lib/builtins/divtf3.c
+             ${CRT_SRC}/lib/builtins/divti3.c
+             ${CRT_SRC}/lib/builtins/divxc3.c
+             ${CRT_SRC}/lib/builtins/extenddftf2.c
+             ${CRT_SRC}/lib/builtins/extendhfsf2.c
+             ${CRT_SRC}/lib/builtins/extendsfdf2.c
+             ${CRT_SRC}/lib/builtins/extendsftf2.c
+             ${CRT_SRC}/lib/builtins/ffsdi2.c
+             ${CRT_SRC}/lib/builtins/ffsti2.c
+             ${CRT_SRC}/lib/builtins/fixdfdi.c
+             ${CRT_SRC}/lib/builtins/fixdfsi.c
+             ${CRT_SRC}/lib/builtins/fixdfti.c
+             ${CRT_SRC}/lib/builtins/fixsfdi.c
+             ${CRT_SRC}/lib/builtins/fixsfsi.c
+             ${CRT_SRC}/lib/builtins/fixsfti.c
+             ${CRT_SRC}/lib/builtins/fixtfdi.c
+             ${CRT_SRC}/lib/builtins/fixtfsi.c
+             ${CRT_SRC}/lib/builtins/fixtfti.c
+             ${CRT_SRC}/lib/builtins/fixunsdfdi.c
+             ${CRT_SRC}/lib/builtins/fixunsdfsi.c
+             ${CRT_SRC}/lib/builtins/fixunsdfti.c
+             ${CRT_SRC}/lib/builtins/fixunssfdi.c
+             ${CRT_SRC}/lib/builtins/fixunssfsi.c
+             ${CRT_SRC}/lib/builtins/fixunssfti.c
+             ${CRT_SRC}/lib/builtins/fixunstfdi.c
+             ${CRT_SRC}/lib/builtins/fixunstfsi.c
+             ${CRT_SRC}/lib/builtins/fixunstfti.c
+             ${CRT_SRC}/lib/builtins/fixunsxfdi.c
+             ${CRT_SRC}/lib/builtins/fixunsxfsi.c
+             ${CRT_SRC}/lib/builtins/fixunsxfti.c
+             ${CRT_SRC}/lib/builtins/fixxfdi.c
+             ${CRT_SRC}/lib/builtins/fixxfti.c
+             ${CRT_SRC}/lib/builtins/floatdidf.c
+             ${CRT_SRC}/lib/builtins/floatdisf.c
+             ${CRT_SRC}/lib/builtins/floatditf.c
+             ${CRT_SRC}/lib/builtins/floatdixf.c
+             ${CRT_SRC}/lib/builtins/floatsidf.c
+             ${CRT_SRC}/lib/builtins/floatsisf.c
+             ${CRT_SRC}/lib/builtins/floatsitf.c
+             ${CRT_SRC}/lib/builtins/floattidf.c
+             ${CRT_SRC}/lib/builtins/floattisf.c
+             ${CRT_SRC}/lib/builtins/floattitf.c
+             ${CRT_SRC}/lib/builtins/floattixf.c
+             ${CRT_SRC}/lib/builtins/floatundidf.c
+             ${CRT_SRC}/lib/builtins/floatundisf.c
+             ${CRT_SRC}/lib/builtins/floatunditf.c
+             ${CRT_SRC}/lib/builtins/floatundixf.c
+             ${CRT_SRC}/lib/builtins/floatunsidf.c
+             ${CRT_SRC}/lib/builtins/floatunsisf.c
+             ${CRT_SRC}/lib/builtins/floatunsitf.c
+             ${CRT_SRC}/lib/builtins/floatuntidf.c
+             ${CRT_SRC}/lib/builtins/floatuntisf.c
+             ${CRT_SRC}/lib/builtins/floatuntitf.c
+             ${CRT_SRC}/lib/builtins/floatuntixf.c
+             ${CRT_SRC}/lib/builtins/gcc_personality_v0.c
+             ${CRT_SRC}/lib/builtins/int_util.c
+             ${CRT_SRC}/lib/builtins/lshrdi3.c
+             ${CRT_SRC}/lib/builtins/lshrti3.c
+             ${CRT_SRC}/lib/builtins/mingw_fixfloat.c
+             ${CRT_SRC}/lib/builtins/moddi3.c
+             ${CRT_SRC}/lib/builtins/modsi3.c
+             ${CRT_SRC}/lib/builtins/modti3.c
+             ${CRT_SRC}/lib/builtins/muldc3.c
+             ${CRT_SRC}/lib/builtins/muldf3.c
+             ${CRT_SRC}/lib/builtins/muldi3.c
+             ${CRT_SRC}/lib/builtins/mulodi4.c
+             ${CRT_SRC}/lib/builtins/mulosi4.c
+             ${CRT_SRC}/lib/builtins/muloti4.c
+             ${CRT_SRC}/lib/builtins/mulsc3.c
+             ${CRT_SRC}/lib/builtins/mulsf3.c
+             ${CRT_SRC}/lib/builtins/multc3.c
+             ${CRT_SRC}/lib/builtins/multf3.c
+             ${CRT_SRC}/lib/builtins/multi3.c
+             ${CRT_SRC}/lib/builtins/mulvdi3.c
+             ${CRT_SRC}/lib/builtins/mulvsi3.c
+             ${CRT_SRC}/lib/builtins/mulvti3.c
+             ${CRT_SRC}/lib/builtins/mulxc3.c
+             ${CRT_SRC}/lib/builtins/negdf2.c
+             ${CRT_SRC}/lib/builtins/negdi2.c
+             ${CRT_SRC}/lib/builtins/negsf2.c
+             ${CRT_SRC}/lib/builtins/negti2.c
+             ${CRT_SRC}/lib/builtins/negvdi2.c
+             ${CRT_SRC}/lib/builtins/negvsi2.c
+             ${CRT_SRC}/lib/builtins/negvti2.c
+             ${CRT_SRC}/lib/builtins/paritydi2.c
+             ${CRT_SRC}/lib/builtins/paritysi2.c
+             ${CRT_SRC}/lib/builtins/parityti2.c
+             ${CRT_SRC}/lib/builtins/popcountdi2.c
+             ${CRT_SRC}/lib/builtins/popcountsi2.c
+             ${CRT_SRC}/lib/builtins/popcountti2.c
+             ${CRT_SRC}/lib/builtins/powidf2.c
+             ${CRT_SRC}/lib/builtins/powisf2.c
+             ${CRT_SRC}/lib/builtins/powitf2.c
+             ${CRT_SRC}/lib/builtins/powixf2.c
+             ${CRT_SRC}/lib/builtins/subdf3.c
+             ${CRT_SRC}/lib/builtins/subsf3.c
+             ${CRT_SRC}/lib/builtins/subtf3.c
+             ${CRT_SRC}/lib/builtins/subvdi3.c
+             ${CRT_SRC}/lib/builtins/subvsi3.c
+             ${CRT_SRC}/lib/builtins/subvti3.c
+             ${CRT_SRC}/lib/builtins/trampoline_setup.c
+             ${CRT_SRC}/lib/builtins/truncdfhf2.c
+             ${CRT_SRC}/lib/builtins/truncdfsf2.c
+             ${CRT_SRC}/lib/builtins/truncsfhf2.c
+             ${CRT_SRC}/lib/builtins/trunctfdf2.c
+             ${CRT_SRC}/lib/builtins/trunctfsf2.c
+             ${CRT_SRC}/lib/builtins/ucmpdi2.c
+             ${CRT_SRC}/lib/builtins/ucmpti2.c
+             ${CRT_SRC}/lib/builtins/udivdi3.c
+             ${CRT_SRC}/lib/builtins/udivmoddi4.c
+             ${CRT_SRC}/lib/builtins/udivmodsi4.c
+             ${CRT_SRC}/lib/builtins/udivmodti4.c
+             ${CRT_SRC}/lib/builtins/udivti3.c
+             ${CRT_SRC}/lib/builtins/umoddi3.c
+             ${CRT_SRC}/lib/builtins/umodsi3.c
+             ${CRT_SRC}/lib/builtins/umodti3.c)
