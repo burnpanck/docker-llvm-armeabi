@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 # Download LLVM and Clang
 # parameters:
-#  - DOWNLOAD_ROOT
+#  - SRC_ROOT
 # requirements:
 #  - curl
 
 set -e
 set -o errexit
 
-cd ${DOWNLOAD_ROOT}
+cd ${SRC_ROOT}
 
 curl -LO https://releases.llvm.org/8.0.0/llvm-8.0.0.src.tar.xz && \
     [ "8872be1b12c61450cacc82b3d153eab02be2546ef34fa3580ed14137bb26224c" = \

@@ -1,0 +1,108 @@
+diff --git a/compiler-rt/lib/builtins/CMakeLists.txt b/compiler-rt/lib/builtins/CMakeLists.txt
+index 77947417bfe..e56206b65bf 100644
+--- a/compiler-rt/lib/builtins/CMakeLists.txt
++++ b/compiler-rt/lib/builtins/CMakeLists.txt
+@@ -357,48 +357,55 @@ set(arm_Thumb1_JT_SOURCES
+ set(arm_Thumb1_SjLj_EH_SOURCES
+   arm/restore_vfp_d8_d15_regs.S
+   arm/save_vfp_d8_d15_regs.S)
+-set(arm_Thumb1_VFPv2_SOURCES
+-  arm/adddf3vfp.S
++set(arm_Thumb1_VFPv2_sgl_SOURCES
+   arm/addsf3vfp.S
+-  arm/divdf3vfp.S
+   arm/divsf3vfp.S
+-  arm/eqdf2vfp.S
+   arm/eqsf2vfp.S
++  arm/fixsfsivfp.S
++  arm/fixunssfsivfp.S
++  arm/floatsisfvfp.S
++  arm/floatunssisfvfp.S
++  arm/gesf2vfp.S
++  arm/gtsf2vfp.S
++  arm/lesf2vfp.S
++  arm/ltsf2vfp.S
++  arm/mulsf3vfp.S
++  arm/negsf2vfp.S
++  arm/nesf2vfp.S
++  arm/subsf3vfp.S
++  arm/unordsf2vfp.S)
++set(arm_Thumb1_VFPv2_dbl_SOURCES
++  arm/adddf3vfp.S
++  arm/divdf3vfp.S
++  arm/eqdf2vfp.S
+   arm/extendsfdf2vfp.S
+   arm/fixdfsivfp.S
+-  arm/fixsfsivfp.S
+   arm/fixunsdfsivfp.S
+-  arm/fixunssfsivfp.S
+   arm/floatsidfvfp.S
+-  arm/floatsisfvfp.S
+   arm/floatunssidfvfp.S
+-  arm/floatunssisfvfp.S
+   arm/gedf2vfp.S
+-  arm/gesf2vfp.S
+   arm/gtdf2vfp.S
+-  arm/gtsf2vfp.S
+   arm/ledf2vfp.S
+-  arm/lesf2vfp.S
+   arm/ltdf2vfp.S
+-  arm/ltsf2vfp.S
+   arm/muldf3vfp.S
+-  arm/mulsf3vfp.S
+   arm/nedf2vfp.S
+   arm/negdf2vfp.S
+-  arm/negsf2vfp.S
+-  arm/nesf2vfp.S
+   arm/subdf3vfp.S
+-  arm/subsf3vfp.S
+   arm/truncdfsf2vfp.S
+-  arm/unorddf2vfp.S
+-  arm/unordsf2vfp.S)
++  arm/unorddf2vfp.S)
++set(arm_Thumb1_VFPv2_SOURCES
++  ${arm_Thumb1_VFPv2_sgl_SOURCES}
++  ${arm_Thumb1_VFPv2_dbl_SOURCES})
+ set(arm_Thumb1_icache_SOURCES
+   arm/sync_synchronize.S)
+-set(arm_Thumb1_SOURCES
++set(arm_Thumb1_sgl_SOURCES
+   ${arm_Thumb1_JT_SOURCES}
+   ${arm_Thumb1_SjLj_EH_SOURCES}
+-  ${arm_Thumb1_VFPv2_SOURCES}
++  ${arm_Thumb1_VFPv2_sgl_SOURCES}
+   ${arm_Thumb1_icache_SOURCES})
++set(arm_Thumb1_SOURCES
++  ${arm_Thumb1_sgl_SOURCES}
++  ${arm_Thumb1_VFPv2_dbl_SOURCES})
+ 
+ if(MINGW)
+   set(arm_SOURCES
+@@ -429,10 +436,14 @@ if(MINGW)
+   filter_builtin_sources(arm_SOURCES EXCLUDE arm_SOURCES "${arm_SOURCES};${GENERIC_SOURCES}")
+ elseif(NOT WIN32)
+   # TODO the EABI sources should only be added to EABI targets
+-  set(arm_SOURCES
++  set(arm_sgl_SOURCES
+     ${arm_SOURCES}
+     ${arm_EABI_SOURCES}
+-    ${arm_Thumb1_SOURCES})
++    ${arm_Thumb1_sgl_SOURCES})
++
++  set(arm_SOURCES
++    ${arm_sgl_SOURCES}
++    ${arm_Thumb1_VFPv2_dbl_SOURCES})
+ 
+   set(thumb1_SOURCES
+     ${thumb1_SOURCES}
+@@ -457,8 +468,8 @@ set(arm64_SOURCES ${aarch64_SOURCES})
+ 
+ # macho_embedded archs
+ set(armv6m_SOURCES ${thumb1_SOURCES})
+-set(armv7m_SOURCES ${arm_SOURCES})
+-set(armv7em_SOURCES ${arm_SOURCES})
++set(armv7m_SOURCES ${arm_sgl_SOURCES})
++set(armv7em_SOURCES ${arm_sgl_SOURCES})
+ 
+ # hexagon arch
+ set(hexagon_SOURCES ${GENERIC_SOURCES} ${GENERIC_TF_SOURCES})

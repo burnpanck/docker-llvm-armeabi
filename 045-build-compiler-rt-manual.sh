@@ -2,7 +2,7 @@
 # Build runtime
 # parameters:
 #  - SCRIPT_ROOT
-#  - DOWNLOAD_ROOT
+#  - SRC_ROOT
 #  - BUILD_ROOT
 #  - INSTALL_PREFIX
 # requirements:
@@ -27,12 +27,12 @@ XCPUDIR=cortex-m4f
 XFPU="-mfloat-abi=hard -mfpu=fpv4-sp-d16"
 PATH=$PATH:${CLANG_PATH}/bin
 
-mkdir -p ${DOWNLOAD_ROOT}/compiler-rt/cortex-m/
-cp ${SCRIPT_ROOT}/patches/compiler_rt-cortex-m-CMakeLists.txt ${DOWNLOAD_ROOT}/compiler-rt/cortex-m/CMakeLists.txt
+mkdir -p ${SRC_ROOT}/compiler-rt/cortex-m/
+cp ${SCRIPT_ROOT}/patches/compiler_rt-cortex-m-CMakeLists.txt ${SRC_ROOT}/compiler-rt/cortex-m/CMakeLists.txt
 
 mkdir -p ${BUILD_ROOT}/compiler_rt
 cd ${BUILD_ROOT}/compiler_rt
-cmake -G Ninja ${DOWNLOAD_ROOT}/compiler-rt/cortex-m \
+cmake -G Ninja ${SRC_ROOT}/compiler-rt/cortex-m \
     -DXTARGET=${XTARGET} -DXCPU=${XCPU} -DXCPUDIR=${XCPUDIR} \
     -DXCFLAGS="${XFPU}" -DXCLANG=${CLANG_PATH}/bin/clang
 cmake --build .

@@ -2,7 +2,7 @@
 # Build runtime
 # parameters:
 #  - SCRIPT_ROOT
-#  - DOWNLOAD_ROOT
+#  - SRC_ROOT
 #  - BUILD_ROOT
 #  - INSTALL_PREFIX
 # requirements:
@@ -36,7 +36,7 @@ export RANLIB_FOR_TARGET=${CLANG_PATH}/bin/llvm-ranlib
 export READELF_FOR_TARGET=${CLANG_PATH}/bin/llvm-readelf
 export CFLAGS_FOR_TARGET="-target ${XTARGET} -mcpu=${XCPU} ${XFPU} -mthumb -mabi=aapcs -g -O3 -ffunction-sections -fdata-sections -Wno-unused-command-line-argument"
 export AS_FOR_TARGET="${CLANG_PATH}/bin/clang"
-${DOWNLOAD_ROOT}/newlib/configure \
+${SRC_ROOT}/newlib/configure \
     --host=`cc -dumpmachine`\
     --build=`cc -dumpmachine`\
     --target=${XTARGET}\

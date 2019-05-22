@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Build LLVM
 # parameters:
-#  - DOWNLOAD_ROOT
+#  - SRC_ROOT
 #  - BUILD_ROOT
 #  - INSTALL_PREFIX
 # requirements:
@@ -24,7 +24,7 @@ LLVM_BUILD_PATH=${BUILD_ROOT}/llvm
 
 mkdir -p ${LLVM_BUILD_PATH}
 cd ${LLVM_BUILD_PATH}
-cmake -G Ninja ${DOWNLOAD_ROOT}/llvm \
+cmake -G Ninja ${SRC_ROOT}/llvm \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=${CLANG_PATH} \
     -DLLVM_ENABLE_SPHINX=False \

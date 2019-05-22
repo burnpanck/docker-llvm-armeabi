@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# Build runtime
+# parameters:
+#  - SCRIPT_ROOT
+#  - SRC_ROOT
+#  - BUILD_ROOT
+#  - INSTALL_PREFIX
+# requirements:
+#  - build-base
+#  - ninja
+#  - cmake
+#  - git
+#  - patch
+#  - vim
+#  - python2
+#  - curl
+#  - file
+
+
+set -e
+set -o errexit
+CLANG_PATH=${INSTALL_PREFIX}/clang-8.0
+
+XTARGET=armv7em-none-eabi
+XCPU=cortex-m4
+XCPUDIR=cortex-m4f
+XFPU="-mfloat-abi=hard -mfpu=fpv4-sp-d16"
+
+PATH=$PATH:${CLANG_PATH}/bin
+
+SYSROOT=${CLANG_PATH}/${XTARGET}/${XCPUDIR}
+
+CXX_FLAGS="-O3 -g --target=${XTARGET} -mcpu=${XCPU} ${XFPU} ${XABI} ${CXX_DEFINES}"
+CXX_DEFINES=""
+CXX_INCLUDE_PATH=""
+
+COMPILER_FLAGS="${CXX_FLAGS} ${CXX_DEFINES} ${CXX_INCLUDE_PATH}"
+
+#   -DLLVM_CONFIG_PATH=${CLANG_PATH}/bin/llvm-config \
+
+mkdir -p ${BUILD_ROOT}/compiler-rt
+cd ${BUILD_ROOT}/compiler-rt
+cmake -GNinja -Wno-dev \
+   -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY \
+   -DCMAKE_SYSTEM_PROCESSOR=arm \
+   -DCMAKE_SYSTEM_NAME=Generic \
+   -DCMAKE_CROSSCOMPILING=ON \
+   -DUNIX=1 \
+   -DCMAKE_CXX_COMPILER_FORCED=TRUE \
+   -DCMAKE_INSTALL_PREFIX=${CLANG_PATH} \
+   -DCMAKE_BUILD_TYPE=Release \
+   -DCMAKE_C_COMPILER_TARGET=${XTARGET} \
+   -DCMAKE_ASM_COMPILER_TARGET=${XTARGET} \
+   -DCMAKE_C_COMPILER=${CLANG_PATH}/bin/clang \
+   -DCMAKE_CXX_COMPILER=${CLANG_PATH}/bin/clang++ \
+   -DCMAKE_LINKER=${CLANG_PATH}/bin/clang \
+   -DCMAKE_AR=${CLANG_PATH}/bin/llvm-ar \
+   -DCMAKE_RANLIB=${CLANG_PATH}/bin/llvm-ranlib \
+   -DLLVM_ABI_BREAKING_CHECKS=WITH_ASSERTS \
+   -DCMAKE_SYSROOT=${SYSROOT} \
+   -DCMAKE_SYSROOT_LINK=${SYSROOT} \
+   -DCMAKE_C_FLAGS="${COMPILER_FLAGS}" \
+   -DCMAKE_ASM_FLAGS="${COMPILER_FLAGS}" \
+   -DCMAKE_CXX_FLAGS="${COMPILER_FLAGS}" \
+   -DCMAKE_EXE_LINKER_FLAGS=-L${SYSROOT}/lib \
+   -DCOMPILER_RT_OS_DIR="baremetal" \
+   -DCOMPILER_RT_BUILD_BUILTINS=ON \
+   -DCOMPILER_RT_BUILD_SANITIZERS=OFF \
+   -DCOMPILER_RT_BUILD_XRAY=OFF \
+   -DCOMPILER_RT_BUILD_LIBFUZZER=OFF \
+   -DCOMPILER_RT_BUILD_PROFILE=OFF \
+   -DCOMPILER_RT_BAREMETAL_BUILD=ON \
+   -DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
+   -DCOMPILER_RT_INCLUDE_TESTS=OFF \
+   -DCOMPILER_RT_USE_LIBCXX=ON \
+    ${SRC_ROOT}/compiler-rt
+cmake --build .
+cmake --build . --target install
