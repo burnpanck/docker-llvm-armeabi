@@ -19,14 +19,15 @@
 set -e
 set -o errexit
 
-CLANG_PATH=${INSTALL_PREFIX}/clang-8.0
+source ./config.sh
+
 LLVM_BUILD_PATH=${BUILD_ROOT}/llvm
 
 mkdir -p ${LLVM_BUILD_PATH}
 cd ${LLVM_BUILD_PATH}
 cmake -G Ninja ${SRC_ROOT}/llvm \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=${CLANG_PATH} \
+    -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
     -DLLVM_ENABLE_SPHINX=False \
     -DLLVM_INCLUDE_TESTS=False \
     -DLLVM_TARGETS_TO_BUILD="ARM" \
@@ -34,6 +35,6 @@ cmake -G Ninja ${SRC_ROOT}/llvm \
 cmake --build .
 cmake --build . --target install
 
-PATH=${PATH}:${CLANG_PATH}/bin
-file ${CLANG_PATH}/bin/* | grep ELF | cut -d: -f1 | xargs strip
-rm ${CLANG_PATH}/lib/*.a
+PATH=${PATH}:${INSTALL_PREFIX}/bin
+file ${INSTALL_PREFIX}/bin/* | grep ELF | cut -d: -f1 | xargs strip
+rm ${INSTALL_PREFIX}/lib/*.a

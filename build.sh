@@ -3,14 +3,21 @@
 set -e
 set -o errexit
 
-TOOLCHAIN_ROOT=/mnt/LargeData/SDKs/llvm-arm-none-eabi-newlib
-export SRC_ROOT=${TOOLCHAIN_ROOT}/src
-export BUILD_ROOT=${TOOLCHAIN_ROOT}/build
-export INSTALL_PREFIX=${TOOLCHAIN_ROOT}/dist
+export TOOLCHAIN_ROOT=/mnt/LargeData/SDKs/llvm-armeabi-newlib
+export TOOLCHAIN_ROOT=/mnt/LargeData/SDKs/test
+
+source ./config.sh
+
+echo "Starting build."
+echo "TOOLCHAIN_ROOT=${TOOLCHAIN_ROOT}"
+echo "SRC_ROOT=${SRC_ROOT}"
+echo "BUILD_ROOT=${BUILD_ROOT}"
+echo "INSTALL_PREFIX=${INSTALL_PREFIX}"
+echo ""
+
 mkdir -p ${SRC_ROOT}
 mkdir -p ${BUILD_ROOT}
 
-export SCRIPT_ROOT=`pwd`
 ./010-download-newlib.sh
 ./020-download-llvm.sh
 ./025-download-libc++.sh
@@ -19,3 +26,5 @@ export SCRIPT_ROOT=`pwd`
 ./044-build-compiler-rt.sh
 #./045-build-compiler-rt-manual.sh
 ./050-build-libc++.sh
+
+echo "Build complete."

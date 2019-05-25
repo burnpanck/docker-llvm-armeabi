@@ -19,28 +19,25 @@
 
 set -e
 set -o errexit
-CLANG_PATH=${INSTALL_PREFIX}/clang-8.0
 
-XTARGET=armv7em-none-eabi
-XCPU=cortex-m4
-XCPUDIR=cortex-m4f
-XFPU="-mfloat-abi=hard -mfpu=fpv4-sp-d16"
-PATH=$PATH:${CLANG_PATH}/bin
+source ./config.sh
 
 mkdir -p ${BUILD_ROOT}/newlib
 cd ${BUILD_ROOT}/newlib
-export CC_FOR_TARGET=${CLANG_PATH}/bin/clang
-export AR_FOR_TARGET=${CLANG_PATH}/bin/llvm-ar
-export NM_FOR_TARGET=${CLANG_PATH}/bin/llvm-nm
-export RANLIB_FOR_TARGET=${CLANG_PATH}/bin/llvm-ranlib
-export READELF_FOR_TARGET=${CLANG_PATH}/bin/llvm-readelf
-export CFLAGS_FOR_TARGET="-target ${XTARGET} -mcpu=${XCPU} ${XFPU} -mthumb -mabi=aapcs -g -O3 -ffunction-sections -fdata-sections -Wno-unused-command-line-argument"
-export AS_FOR_TARGET="${CLANG_PATH}/bin/clang"
+export CC_FOR_TARGET=${INSTALL_PREFIX}/bin/clang
+export CXX_FOR_TARGET=${INSTALL_PREFIX}/bin/clang++
+export AR_FOR_TARGET=${INSTALL_PREFIX}/bin/llvm-ar
+export NM_FOR_TARGET=${INSTALL_PREFIX}/bin/llvm-nm
+export RANLIB_FOR_TARGET=${INSTALL_PREFIX}/bin/llvm-ranlib
+export READELF_FOR_TARGET=${INSTALL_PREFIX}/bin/llvm-readelf
+export CFLAGS_FOR_TARGET="-target ${XTARGET} -mcpu=${XCPU} ${XFPU} ${XABI} -g -O3 -ffunction-sections -fdata-sections -Wno-unused-command-line-argument"
+export AS_FOR_TARGET=${INSTALL_PREFIX}/bin/clang
+export LD_FOR_TARGET=${INSTALL_PREFIX}/bin/clang
 ${SRC_ROOT}/newlib/configure \
     --host=`cc -dumpmachine`\
     --build=`cc -dumpmachine`\
     --target=${XTARGET}\
-    --prefix=${CLANG_PATH}/${XTARGET}/${XCPUDIR}\
+    --prefix=${INSTALL_PREFIX}/${XTARGET}/${XCPUDIR}\
     --disable-newlib-supplied-syscalls\
     --enable-newlib-reent-small\
     --disable-newlib-fvwrite-in-streamio\
@@ -58,6 +55,6 @@ ${SRC_ROOT}/newlib/configure \
     --disable-nls
 make
 make install
-mv ${CLANG_PATH}/${XTARGET}/${XCPUDIR}/${XTARGET}/* \
-    ${CLANG_PATH}/${XTARGET}/${XCPUDIR}/
-rmdir ${CLANG_PATH}/${XTARGET}/${XCPUDIR}/${XTARGET}
+mv ${INSTALL_PREFIX}/${XTARGET}/${XCPUDIR}/${XTARGET}/* \
+    ${INSTALL_PREFIX}/${XTARGET}/${XCPUDIR}/
+rmdir ${INSTALL_PREFIX}/${XTARGET}/${XCPUDIR}/${XTARGET}

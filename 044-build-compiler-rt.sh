@@ -19,24 +19,14 @@
 
 set -e
 set -o errexit
-CLANG_PATH=${INSTALL_PREFIX}/clang-8.0
 
-XTARGET=armv7em-none-eabi
-XCPU=cortex-m4
-XCPUDIR=cortex-m4f
-XFPU="-mfloat-abi=hard -mfpu=fpv4-sp-d16"
+source ./config.sh
 
-PATH=$PATH:${CLANG_PATH}/bin
-
-SYSROOT=${CLANG_PATH}/${XTARGET}/${XCPUDIR}
-
-CXX_FLAGS="-O3 -g --target=${XTARGET} -mcpu=${XCPU} ${XFPU} ${XABI} ${CXX_DEFINES}"
+CXX_FLAGS="-O3 -g --target=${XTARGET} -mcpu=${XCPU} ${XFPU} ${XABI} -fomit-frame-pointer"
 CXX_DEFINES=""
 CXX_INCLUDE_PATH=""
 
 COMPILER_FLAGS="${CXX_FLAGS} ${CXX_DEFINES} ${CXX_INCLUDE_PATH}"
-
-#   -DLLVM_CONFIG_PATH=${CLANG_PATH}/bin/llvm-config \
 
 mkdir -p ${BUILD_ROOT}/compiler-rt
 cd ${BUILD_ROOT}/compiler-rt
@@ -47,16 +37,18 @@ cmake -GNinja -Wno-dev \
    -DCMAKE_CROSSCOMPILING=ON \
    -DUNIX=1 \
    -DCMAKE_CXX_COMPILER_FORCED=TRUE \
-   -DCMAKE_INSTALL_PREFIX=${CLANG_PATH} \
+   -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
    -DCMAKE_BUILD_TYPE=Release \
    -DCMAKE_C_COMPILER_TARGET=${XTARGET} \
    -DCMAKE_ASM_COMPILER_TARGET=${XTARGET} \
-   -DCMAKE_C_COMPILER=${CLANG_PATH}/bin/clang \
-   -DCMAKE_CXX_COMPILER=${CLANG_PATH}/bin/clang++ \
-   -DCMAKE_LINKER=${CLANG_PATH}/bin/clang \
-   -DCMAKE_AR=${CLANG_PATH}/bin/llvm-ar \
-   -DCMAKE_RANLIB=${CLANG_PATH}/bin/llvm-ranlib \
+   -DCMAKE_C_COMPILER=${INSTALL_PREFIX}/bin/clang \
+   -DCMAKE_CXX_COMPILER=${INSTALL_PREFIX}/bin/clang++ \
+   -DCMAKE_LINKER=${INSTALL_PREFIX}/bin/clang \
+   -DCMAKE_AR=${INSTALL_PREFIX}/bin/llvm-ar \
+   -DCMAKE_RANLIB=${INSTALL_PREFIX}/bin/llvm-ranlib \
+   -DLLVM_CONFIG_PATH=${BUILD_ROOT}/llvm/bin/llvm-config \
    -DLLVM_ABI_BREAKING_CHECKS=WITH_ASSERTS \
+   -DLLVM_TARGETS_TO_BUILD="ARM" \
    -DCMAKE_SYSROOT=${SYSROOT} \
    -DCMAKE_SYSROOT_LINK=${SYSROOT} \
    -DCMAKE_C_FLAGS="${COMPILER_FLAGS}" \
@@ -76,3 +68,8 @@ cmake -GNinja -Wno-dev \
     ${SRC_ROOT}/compiler-rt
 cmake --build .
 cmake --build . --target install
+
+
+# due to a bug in clang (https://bugs.llvm.org/show_bug.cgi?id=34578),
+# the builtins are found with the wrong name - just create a link here to fix it
+ln -s libclang_rt.builtins-armv7em.a ${INSTALL_PREFIX}/lib/baremetal/libclang_rt.builtins-armv7em.a.a

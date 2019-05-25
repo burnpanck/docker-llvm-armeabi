@@ -19,23 +19,13 @@
 
 set -e
 set -o errexit
-CLANG_PATH=${INSTALL_PREFIX}/clang-8.0
 
-XTARGET=armv7em-none-eabi
-XCPU=cortex-m4
-XCPUDIR=cortex-m4f
-XFPU="-mfloat-abi=hard -mfpu=fpv4-sp-d16"
-XABI="-mthumb -mabi=aapcs"
+source ./config.sh
 
-SYSROOT=${CLANG_PATH}/${XTARGET}/${XCPUDIR}
-
-PATH=$PATH:${CLANG_PATH}/bin
-
-
-CXX_FLAGS="-O3 -g --target=${XTARGET} -mcpu=${XCPU} ${XFPU} ${XABI} ${CXX_DEFINES}"
+CXX_FLAGS="-O3 -g --target=${XTARGET} -mcpu=${XCPU} ${XFPU} ${XABI}"
 CXX_DEFINES="-D_LIBUNWIND_IS_BAREMETAL=1 -D_GNU_SOURCE=1 -D_POSIX_TIMERS=1"
 CXX_INCLUDE_PATH="-I${SRC_ROOT}/libunwind/include -I${SRC_ROOT}/libcxxabi/include -I${SRC_ROOT}/libcxx/include -I${SYSROOT}/include"
-CXX_LINK_PATH="-L${SYSROOT}/lib -L${CLANG_PATH}/lib/baremetal"
+CXX_LINK_PATH="-L${SYSROOT}/lib -L${INSTALL_PREFIX}/lib/baremetal"
 
 LIBCXX_FLAGS="${CXX_FLAGS} ${CXX_DEFINES} ${CXX_INCLUDE_PATH}"
 LIBUNWIND_FLAGS="${LIBCXX_FLAGS} -D_LIBCPP_HAS_NO_THREADS"
@@ -48,19 +38,18 @@ mkdir -p ${BUILD_ROOT}/libunwind
     cd ${BUILD_ROOT}/libunwind
     cmake -GNinja -Wno-dev \
        -DCMAKE_SYSTEM_PROCESSOR=arm \
-       -G Ninja -Wno-dev \
-       -DCMAKE_SYSTEM_PROCESSOR=arm \
        -DCMAKE_SYSTEM_NAME=Generic \
        -DCMAKE_CROSSCOMPILING=ON \
        -DUNIX=1 \
        -DCMAKE_CXX_COMPILER_FORCED=TRUE \
-       -DCMAKE_INSTALL_PREFIX=${CLANG_PATH} \
+       -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
        -DCMAKE_BUILD_TYPE=Release \
-       -DCMAKE_C_COMPILER=${CLANG_PATH}/bin/clang \
-       -DCMAKE_CXX_COMPILER=${CLANG_PATH}/bin/clang++ \
-       -DCMAKE_LINKER=${CLANG_PATH}/bin/clang \
-       -DCMAKE_AR=${CLANG_PATH}/bin/llvm-ar \
-       -DCMAKE_RANLIB=${CLANG_PATH}/bin/llvm-ranlib \
+       -DCMAKE_C_COMPILER=${INSTALL_PREFIX}/bin/clang \
+       -DCMAKE_CXX_COMPILER=${INSTALL_PREFIX}/bin/clang++ \
+       -DCMAKE_LINKER=${INSTALL_PREFIX}/bin/clang \
+       -DCMAKE_AR=${INSTALL_PREFIX}/bin/llvm-ar \
+       -DCMAKE_RANLIB=${INSTALL_PREFIX}/bin/llvm-ranlib \
+       -DLLVM_CONFIG_PATH=${BUILD_ROOT}/llvm/bin/llvm-config \
        -DLLVM_ABI_BREAKING_CHECKS=WITH_ASSERTS \
        -DCMAKE_SYSROOT=${SYSROOT} \
        -DCMAKE_SYSROOT_LINK=${SYSROOT} \
@@ -89,13 +78,14 @@ mkdir -p ${BUILD_ROOT}/libcxxabi
        -DCMAKE_CROSSCOMPILING=ON \
        -DUNIX=1 \
        -DCMAKE_CXX_COMPILER_FORCED=TRUE \
-       -DCMAKE_INSTALL_PREFIX=${CLANG_PATH} \
+       -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
        -DCMAKE_BUILD_TYPE=Release \
-       -DCMAKE_C_COMPILER=${CLANG_PATH}/bin/clang \
-       -DCMAKE_CXX_COMPILER=${CLANG_PATH}/bin/clang++ \
-       -DCMAKE_LINKER=${CLANG_PATH}/bin/clang \
-       -DCMAKE_AR=${CLANG_PATH}/bin/llvm-ar \
-       -DCMAKE_RANLIB=${CLANG_PATH}/bin/llvm-ranlib \
+       -DCMAKE_C_COMPILER=${INSTALL_PREFIX}/bin/clang \
+       -DCMAKE_CXX_COMPILER=${INSTALL_PREFIX}/bin/clang++ \
+       -DCMAKE_LINKER=${INSTALL_PREFIX}/bin/clang \
+       -DCMAKE_AR=${INSTALL_PREFIX}/bin/llvm-ar \
+       -DCMAKE_RANLIB=${INSTALL_PREFIX}/bin/llvm-ranlib \
+       -DLLVM_CONFIG_PATH=${BUILD_ROOT}/llvm/bin/llvm-config \
        -DLLVM_ABI_BREAKING_CHECKS=WITH_ASSERTS \
        -DCMAKE_SYSROOT=${SYSROOT} \
        -DCMAKE_SYSROOT_LINK=${SYSROOT} \
@@ -134,13 +124,14 @@ mkdir -p ${BUILD_ROOT}/libcxx
        -DCMAKE_CROSSCOMPILING=ON \
        -DUNIX=1 \
        -DCMAKE_CXX_COMPILER_FORCED=TRUE \
-       -DCMAKE_INSTALL_PREFIX=${CLANG_PATH} \
+       -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
        -DCMAKE_BUILD_TYPE=Release \
-       -DCMAKE_C_COMPILER=${CLANG_PATH}/bin/clang \
-       -DCMAKE_CXX_COMPILER=${CLANG_PATH}/bin/clang++ \
-       -DCMAKE_LINKER=${CLANG_PATH}/bin/clang \
-       -DCMAKE_AR=${CLANG_PATH}/bin/llvm-ar \
-       -DCMAKE_RANLIB=${CLANG_PATH}/bin/llvm-ranlib \
+       -DCMAKE_C_COMPILER=${INSTALL_PREFIX}/bin/clang \
+       -DCMAKE_CXX_COMPILER=${INSTALL_PREFIX}/bin/clang++ \
+       -DCMAKE_LINKER=${INSTALL_PREFIX}/bin/clang \
+       -DCMAKE_AR=${INSTALL_PREFIX}/bin/llvm-ar \
+       -DCMAKE_RANLIB=${INSTALL_PREFIX}/bin/llvm-ranlib \
+       -DLLVM_CONFIG_PATH=${BUILD_ROOT}/llvm/bin/llvm-config \
        -DLLVM_ABI_BREAKING_CHECKS=WITH_ASSERTS \
        -DCMAKE_SYSROOT=${SYSROOT} \
        -DCMAKE_SYSROOT_LINK=${SYSROOT} \
