@@ -72,4 +72,4 @@ cmake --build . --target install
 
 # due to a bug in clang (https://bugs.llvm.org/show_bug.cgi?id=34578),
 # the builtins are found with the wrong name - just create a link here to fix it
-ln -s libclang_rt.builtins-armv7em.a ${INSTALL_PREFIX}/lib/baremetal/libclang_rt.builtins-armv7em.a.a
+ln -fs libclang_rt.builtins-armv7em.a ${INSTALL_PREFIX}/lib/baremetal/libclang_rt.builtins-armv7em.a.a

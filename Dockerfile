@@ -32,3 +32,10 @@ COPY 044-build-compiler-rt.sh ./
 RUN ./044-build-compiler-rt.sh
 COPY "050-build-libc++.sh" ./
 RUN ./050-build-libc++.sh
+
+
+FROM alpine:latest
+
+RUN apk update && apk add ninja cmake git curl bash
+
+COPY --from=build /toolchain/dist /toolchain

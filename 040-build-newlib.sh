@@ -24,6 +24,7 @@ source ./config.sh
 
 mkdir -p ${BUILD_ROOT}/newlib
 cd ${BUILD_ROOT}/newlib
+
 export CC_FOR_TARGET=${INSTALL_PREFIX}/bin/clang
 export CXX_FOR_TARGET=${INSTALL_PREFIX}/bin/clang++
 export AR_FOR_TARGET=${INSTALL_PREFIX}/bin/llvm-ar
@@ -33,6 +34,7 @@ export READELF_FOR_TARGET=${INSTALL_PREFIX}/bin/llvm-readelf
 export CFLAGS_FOR_TARGET="-target ${XTARGET} -mcpu=${XCPU} ${XFPU} ${XABI} -g -O3 -ffunction-sections -fdata-sections -Wno-unused-command-line-argument"
 export AS_FOR_TARGET=${INSTALL_PREFIX}/bin/clang
 export LD_FOR_TARGET=${INSTALL_PREFIX}/bin/clang
+
 ${SRC_ROOT}/newlib/configure \
     --host=`cc -dumpmachine`\
     --build=`cc -dumpmachine`\
@@ -47,14 +49,17 @@ ${SRC_ROOT}/newlib/configure \
     --disable-newlib-unbuf-stream-opt\
     --enable-lite-exit\
     --enable-newlib-global-atexit\
-    --disable-newlib-nano-formatted-io \
+    --enable-newlib-nano-formatted-io \
     --disable-newlib-fvwrite-in-streamio \
-    --enable-newlib-io-c99-formats \
-    --enable-newlib-io-float \
-    --disable-newlib-io-long-double \
     --disable-nls
+
+#    --disable-newlib-nano-formatted-io \
+#    --enable-newlib-io-c99-formats \
+#    --enable-newlib-io-float \
+#    --disable-newlib-io-long-double \
+
 make
 make install
-mv ${INSTALL_PREFIX}/${XTARGET}/${XCPUDIR}/${XTARGET}/* \
+cp -rf ${INSTALL_PREFIX}/${XTARGET}/${XCPUDIR}/${XTARGET}/* \
     ${INSTALL_PREFIX}/${XTARGET}/${XCPUDIR}/
-rmdir ${INSTALL_PREFIX}/${XTARGET}/${XCPUDIR}/${XTARGET}
+rm -r ${INSTALL_PREFIX}/${XTARGET}/${XCPUDIR}/${XTARGET}

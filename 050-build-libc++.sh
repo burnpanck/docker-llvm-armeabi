@@ -22,14 +22,15 @@ set -o errexit
 
 source ./config.sh
 
-CXX_FLAGS="-O3 -g --target=${XTARGET} -mcpu=${XCPU} ${XFPU} ${XABI}"
-CXX_DEFINES="-D_LIBUNWIND_IS_BAREMETAL=1 -D_GNU_SOURCE=1 -D_POSIX_TIMERS=1"
+CXX_OPTIONS="-Os -g --target=${XTARGET} -mcpu=${XCPU} ${XFPU} ${XABI} -fomit-frame-pointer -fno-stack-protector -fvisibility=hidden -fdata-sections -ffunction-sections"
+CXX_DEFINES="-D_LIBUNWIND_IS_BAREMETAL=1 -D_GNU_SOURCE=1 -D_POSIX_TIMERS=1 -D_LIBCPP_HAS_NO_LIBRARY_ALIGNED_ALLOCATION"
 CXX_INCLUDE_PATH="-I${SRC_ROOT}/libunwind/include -I${SRC_ROOT}/libcxxabi/include -I${SRC_ROOT}/libcxx/include -I${SYSROOT}/include"
 CXX_LINK_PATH="-L${SYSROOT}/lib -L${INSTALL_PREFIX}/lib/baremetal"
 
-LIBCXX_FLAGS="${CXX_FLAGS} ${CXX_DEFINES} ${CXX_INCLUDE_PATH}"
-LIBUNWIND_FLAGS="${LIBCXX_FLAGS} -D_LIBCPP_HAS_NO_THREADS"
-LIBCXXABI_FLAGS="${LIBUNWIND_FLAGS}"
+CXX_FLAGS="${CXX_OPTIONS} ${CXX_DEFINES} ${CXX_INCLUDE_PATH}"
+LIBCXX_FLAGS="${CXX_FLAGS}"
+LIBUNWIND_FLAGS="${CXX_FLAGS} -D_LIBCPP_HAS_NO_THREADS"
+LIBCXXABI_FLAGS="${CXX_FLAGS} -D_LIBCPP_HAS_NO_THREADS"
 
 # build libunwind
 mkdir -p ${BUILD_ROOT}/libunwind
