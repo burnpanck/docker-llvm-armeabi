@@ -31,7 +31,7 @@ export AR_FOR_TARGET=${INSTALL_PREFIX}/bin/llvm-ar
 export NM_FOR_TARGET=${INSTALL_PREFIX}/bin/llvm-nm
 export RANLIB_FOR_TARGET=${INSTALL_PREFIX}/bin/llvm-ranlib
 export READELF_FOR_TARGET=${INSTALL_PREFIX}/bin/llvm-readelf
-export CFLAGS_FOR_TARGET="-target ${XTARGET} -mcpu=${XCPU} ${XFPU} ${XABI} -g -O3 -ffunction-sections -fdata-sections -Wno-unused-command-line-argument"
+export CFLAGS_FOR_TARGET="-target ${XTARGET} -mcpu=${XCPU} ${XFPU} ${XABI} ${XOPTFLAGS} -Wno-unused-command-line-argument"
 export AS_FOR_TARGET=${INSTALL_PREFIX}/bin/clang
 export LD_FOR_TARGET=${INSTALL_PREFIX}/bin/clang
 

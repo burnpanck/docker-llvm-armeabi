@@ -22,7 +22,7 @@ set -o errexit
 
 source ./config.sh
 
-CXX_OPTIONS="-Os -g --target=${XTARGET} -mcpu=${XCPU} ${XFPU} ${XABI} -fomit-frame-pointer -fno-stack-protector -fvisibility=hidden -fdata-sections -ffunction-sections"
+CXX_OPTIONS="-Os -g --target=${XTARGET} -mcpu=${XCPU} ${XFPU} ${XABI} ${XOPTFLAGS} -fno-stack-protector -fvisibility=hidden"
 CXX_DEFINES="-D_LIBUNWIND_IS_BAREMETAL=1 -D_GNU_SOURCE=1 -D_POSIX_TIMERS=1 -D_LIBCPP_HAS_NO_LIBRARY_ALIGNED_ALLOCATION"
 CXX_INCLUDE_PATH="-I${SRC_ROOT}/libunwind/include -I${SRC_ROOT}/libcxxabi/include -I${SRC_ROOT}/libcxx/include -I${SYSROOT}/include"
 CXX_LINK_PATH="-L${SYSROOT}/lib -L${INSTALL_PREFIX}/lib/baremetal"

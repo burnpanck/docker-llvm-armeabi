@@ -22,7 +22,7 @@ set -o errexit
 
 source ./config.sh
 
-CXX_FLAGS="-O3 -g --target=${XTARGET} -mcpu=${XCPU} ${XFPU} ${XABI} -fomit-frame-pointer"
+CXX_FLAGS="--target=${XTARGET} -mcpu=${XCPU} ${XFPU} ${XABI} ${XOPTFLAGS}"
 CXX_DEFINES=""
 CXX_INCLUDE_PATH=""
 

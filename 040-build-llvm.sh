@@ -1,9 +1,5 @@
 #!/usr/bin/env bash
 # Build LLVM
-# parameters:
-#  - SRC_ROOT
-#  - BUILD_ROOT
-#  - INSTALL_PREFIX
 # requirements:
 #  - build-base
 #  - ninja
@@ -31,7 +27,7 @@ cmake -G Ninja ${SRC_ROOT}/llvm \
     -DLLVM_ENABLE_SPHINX=False \
     -DLLVM_INCLUDE_TESTS=False \
     -DLLVM_TARGETS_TO_BUILD="ARM" \
-    -DCLANG_ANALYZER_ENABLE_Z3_SOLVER=OFF # this last one is just needed on my ubuntu machine because of an incompatible version being present
+    -DCLANG_ANALYZER_ENABLE_Z3_SOLVER=OFF # Z3 version detection is incomplete in the CMakeScript - it may pick up an incompatible version, preventing successful compilation
 cmake --build .
 cmake --build . --target install
 

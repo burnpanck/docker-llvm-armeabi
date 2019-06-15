@@ -11,6 +11,8 @@ XCPUDIR=cortex-m4f
 XFPU="-mfloat-abi=hard -mfpu=fpv4-sp-d16"
 XABI="-mthumb -mabi=aapcs"
 
+XOPTFLAGS="-g -O2 -fomit-frame-pointer -fdata-sections -ffunction-sections"
+
 SYSROOT=${INSTALL_PREFIX}/${XTARGET}/${XCPUDIR}
 
 PATH=$PATH:${INSTALL_PREFIX}/bin

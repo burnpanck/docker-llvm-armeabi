@@ -22,17 +22,19 @@ COPY 010-download-newlib.sh ./
 RUN ./010-download-newlib.sh
 COPY 020-download-llvm.sh ./
 RUN ./020-download-llvm.sh
-COPY "025-download-libc++.sh" ./
-RUN ./025-download-libc++.sh
-COPY 030-build-llvm.sh ./
-RUN ./030-build-llvm.sh
-COPY 040-build-newlib.sh ./
-RUN ./040-build-newlib.sh
-COPY 044-build-compiler-rt.sh ./
-RUN ./044-build-compiler-rt.sh
-COPY "050-build-libc++.sh" ./
-RUN ./050-build-libc++.sh
+COPY "030-download-libc++.sh" ./
+RUN ./030-download-libc++.sh
+COPY 040-build-llvm.sh ./
+RUN ./040-build-llvm.sh
+COPY 050-build-newlib.sh ./
+RUN ./050-build-newlib.sh
+COPY 060-build-compiler-rt.sh ./
+RUN ./060-build-compiler-rt.sh
+COPY "070-build-libc++.sh" ./
+RUN ./070-build-libc++.sh
 
+RUN mkdir ${TOOLCHAIN_ROOT}/dist/cmake
+COPY assets/armv7em-eabi-none-toolchain.cmake ${TOOLCHAIN_ROOT}/dist/cmake
 
 FROM alpine:latest
 
