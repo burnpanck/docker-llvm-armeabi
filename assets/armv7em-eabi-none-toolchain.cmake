@@ -33,7 +33,8 @@ set(CMAKE_NM ${TOOLCHAIN_LLVM_BIN}/llvm-nm)
 set(CMAKE_RANLIB ${TOOLCHAIN_LLVM_BIN}/llvm-ranlib)
 set(CMAKE_READELF ${TOOLCHAIN_LLVM_BIN}/llvm-readelf)
 set(CMAKE_SIZE_UTIL ${TOOLCHAIN_LLVM_BIN}/llvm-size)
-set(CMAKE_OBJCOPY arm-none-eabi-objcopy) # llvm-objcopy cannot create intel hex
+set(CMAKE_OBJCOPY ${TOOLCHAIN_LLVM_BIN}/llvm-objcopy) # llvm-objcopy cannot create intel hex
+set(CMAKE_OBJCOPY_NO_SUPPORT_FOR_INTEL_HEX TRUE)
 
 set(CMAKE_C_FLAGS "${TOOLCHAIN_CPU_FLAGS} ${TOOLCHAIN_ABI_FLAGS}")
 set(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS}")
