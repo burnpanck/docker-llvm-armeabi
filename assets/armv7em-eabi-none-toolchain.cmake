@@ -28,6 +28,13 @@ set(CMAKE_C_COMPILER ${TOOLCHAIN_LLVM_BIN}/clang)
 set(CMAKE_ASM_COMPILER ${TOOLCHAIN_LLVM_BIN}/clang)
 set(CMAKE_CXX_COMPILER ${TOOLCHAIN_LLVM_BIN}/clang++)
 
+set(CMAKE_AR ${TOOLCHAIN_LLVM_BIN}/llvm-ar)
+set(CMAKE_NM ${TOOLCHAIN_LLVM_BIN}/llvm-nm)
+set(CMAKE_RANLIB ${TOOLCHAIN_LLVM_BIN}/llvm-ranlib)
+set(CMAKE_READELF ${TOOLCHAIN_LLVM_BIN}/llvm-readelf)
+set(CMAKE_SIZE_UTIL ${TOOLCHAIN_LLVM_BIN}/llvm-size)
+set(CMAKE_OBJCOPY arm-none-eabi-objcopy) # llvm-objcopy cannot create intel hex
+
 set(CMAKE_C_FLAGS "${TOOLCHAIN_CPU_FLAGS} ${TOOLCHAIN_ABI_FLAGS}")
 set(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS}")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
@@ -39,20 +46,25 @@ set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS}")
 #set(CMAKE_CXX_LINKER ${TOOLCHAIN_LLVM_BIN}/ld.lld)
 
 if(TRUE)
-set(CMAKE_C_LINK_EXECUTABLE
-    "<CMAKE_C_COMPILER>  <FLAGS> <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> <OBJECTS>  -o <TARGET> <LINK_LIBRARIES>"
-)
-set(CMAKE_ASM_LINK_EXECUTABLE
-    "<CMAKE_ASM_COMPILER>  <FLAGS> <CMAKE_ASM_LINK_FLAGS> <LINK_FLAGS> <OBJECTS>  -o <TARGET> <LINK_LIBRARIES>"
-)
-set(CMAKE_CXX_LINK_EXECUTABLE
-    "<CMAKE_CXX_COMPILER>  <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS>  <OBJECTS>  -o <TARGET> <LINK_LIBRARIES>"
-)
+    # It seems `link_directories` does not survive across the `project(...)` call.
+    # The only way I managed to get those system link directories in
+    # was by patching the link command itself.
+    list(JOIN TOOLCHAIN_C_LIBRARY_DIRS " -L"  SYSTEM_LINKER_PATH_FLAGS)
+
+    set(CMAKE_C_LINK_EXECUTABLE
+        "<CMAKE_C_COMPILER> -L${SYSTEM_LINKER_PATH_FLAGS} <FLAGS> <CMAKE_C_LINK_FLAGS> <LINK_FLAGS> <OBJECTS>  -o <TARGET> <LINK_LIBRARIES>"
+    )
+    set(CMAKE_C_LINK_EXECUTABLE
+        "<CMAKE_ASM_COMPILER> -L${SYSTEM_LINKER_PATH_FLAGS} <FLAGS> <CMAKE_ASM_LINK_FLAGS> <LINK_FLAGS> <OBJECTS>  -o <TARGET> <LINK_LIBRARIES>"
+    )
+    set(CMAKE_CXX_LINK_EXECUTABLE
+        "<CMAKE_CXX_COMPILER> -L${SYSTEM_LINKER_PATH_FLAGS} <FLAGS> <CMAKE_CXX_LINK_FLAGS> <LINK_FLAGS> <OBJECTS>  -o <TARGET> <LINK_LIBRARIES>"
+    )
 endif()
 
 # Unfortunately, the target triplet is only applied when CMake knows that the compiler supports it.
-# However, CMake only knows what compiler it has, after it tests it.
-# The test will fail however without the triplet.
+# However, CMake only knows what compiler it has after the compiler tests.
+# Without the triplet, the compiler tests fail.
 if(FALSE)
     set(CMAKE_C_COMPILER_TARGET ${TOOLCHAIN_TARGET_TRIPLE})
     set(CMAKE_ASM_COMPILER_TARGET ${TOOLCHAIN_TARGET_TRIPLE})
