@@ -22,11 +22,14 @@ set -o errexit
 
 source ./config.sh
 
+LLVM_PROJECT_SRC_ROOT="${LLVM_PROJECT_SRC_ROOT:-${SRC_ROOT}}"
+
 CXX_FLAGS="--target=${XTARGET} -mcpu=${XCPU} ${XFPU} ${XABI} ${XOPTFLAGS}"
 CXX_DEFINES=""
 CXX_INCLUDE_PATH=""
 
 COMPILER_FLAGS="${CXX_FLAGS} ${CXX_DEFINES} ${CXX_INCLUDE_PATH}"
+
 
 mkdir -p ${BUILD_ROOT}/compiler-rt
 cd ${BUILD_ROOT}/compiler-rt
@@ -65,7 +68,7 @@ cmake -GNinja -Wno-dev \
    -DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
    -DCOMPILER_RT_INCLUDE_TESTS=OFF \
    -DCOMPILER_RT_USE_LIBCXX=ON \
-    ${SRC_ROOT}/compiler-rt
+    ${LLVM_PROJECT_SRC_ROOT}/compiler-rt
 cmake --build .
 cmake --build . --target install
 
