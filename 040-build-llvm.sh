@@ -26,7 +26,11 @@ cmake -G Ninja ${SRC_ROOT}/llvm \
     -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX} \
     -DLLVM_ENABLE_SPHINX=False \
     -DLLVM_INCLUDE_TESTS=False \
+    -DLLVM_ABI_BREAKING_CHECKS=WITH_ASSERTS \
     -DLLVM_TARGETS_TO_BUILD="ARM" \
+    -DLLVM_DEFAULT_TARGET_TRIPLE="armv7em-none-eabi" \
+    -DLLVM_ENABLE_LLD=ON \
+    -DLLVM_ENABLE_LIBCXX=ON \
     -DCLANG_ANALYZER_ENABLE_Z3_SOLVER=OFF # Z3 version detection is incomplete in the CMakeScript - it may pick up an incompatible version, preventing successful compilation
 cmake --build .
 cmake --build . --target install

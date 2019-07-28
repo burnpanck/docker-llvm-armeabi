@@ -19,10 +19,15 @@ mkdir -p ${BUILD_ROOT}
 
 ./010-download-newlib.sh
 ./020-download-llvm.sh
-./030-download-libc++.sh
+#./030-download-libc++.sh
+./031-download-libc++9.sh
 ./040-build-llvm.sh
 ./050-build-newlib.sh
 ./060-build-compiler-rt.sh
-./070-build-libc++.sh
+#./070-build-libc++.sh
+./071-build-libc++9.sh
+
+mkdir -p "${INSTALL_PREFIX}/cmake"
+cp assets/*-toolchain.cmake "${INSTALL_PREFIX}/cmake/"
 
 echo "Build complete."
