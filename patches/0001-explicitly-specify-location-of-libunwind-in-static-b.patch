@@ -1,0 +1,34 @@
+diff --git a/libcxxabi/src/CMakeLists.txt b/libcxxabi/src/CMakeLists.txt
+index 45d4d025361..3b81cb918ae 100644
+--- a/libcxxabi/src/CMakeLists.txt
++++ b/libcxxabi/src/CMakeLists.txt
+@@ -77,13 +77,15 @@ if (LIBCXXABI_USE_LLVM_UNWINDER)
+     list(APPEND LIBCXXABI_SHARED_LIBRARIES unwind)
+   endif()
+   if (NOT LIBCXXABI_STATICALLY_LINK_UNWINDER_IN_STATIC_LIBRARY AND (TARGET unwind_shared OR HAVE_LIBUNWIND))
+     list(APPEND LIBCXXABI_STATIC_LIBRARIES unwind_shared)
+   elseif (LIBCXXABI_STATICALLY_LINK_UNWINDER_IN_STATIC_LIBRARY AND (TARGET unwind_static OR HAVE_LIBUNWIND))
+-      # We handle this by directly merging libunwind objects into libc++abi.
++    # We handle this by directly merging libunwind objects into libc++abi.
++    set(LIBUNWIND_STATIC_LIBRARY_FILE "$<TARGET_LINKER_FILE:unwind_static>")
+   else()
+     list(APPEND LIBCXXABI_STATIC_LIBRARIES unwind)
++    set(LIBUNWIND_STATIC_LIBRARY_FILE libunwind.a ${LIBCXXABI_LIBUNWIND_LINK_FLAGS})
+   endif()
+ else()
+   add_library_flags_if(LIBCXXABI_HAS_GCC_S_LIB gcc_s)
+ endif()
+ if (MINGW)
+@@ -258,11 +260,11 @@ if (LIBCXXABI_ENABLE_STATIC)
+       ARGS
+         -o "$<TARGET_LINKER_FILE:cxxabi_static>"
+         --ar "${CMAKE_AR}"
+         ${MERGE_ARCHIVES_LIBTOOL}
+         "$<TARGET_LINKER_FILE:cxxabi_static>"
+-        "$<TARGET_LINKER_FILE:unwind_static>"
++        ${LIBUNWIND_STATIC_LIBRARY_FILE}
+       WORKING_DIRECTORY ${LIBCXXABI_BUILD_DIR}
+     )
+   endif()
+ endif()
+

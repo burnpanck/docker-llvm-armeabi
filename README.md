@@ -9,14 +9,16 @@ Most of the code here is based on code from the
 
 This repositories contsains scripts to build the following projects
 for ARMv7em targets:
- - **LLVM/Clang 8.0** (including **LLD**)
+ - **LLVM/Clang 9.0.0rc1** (including **LLD**)
  - **Newlib 3.1.0**:
    Configured in a *nano* configuration, to reduce size for bare-metal applications.
- - **libcompiler-rt**, version 8.0 from the LLVM project
- - **libc++** (plus *libc++abi* and *libunwind*), version 8.0 from the LLVM project.
-   Some features are disabled. Namely threading,
-   which unfortunately also disables the `<atomic>` header.
-
+ - **libcompiler-rt**, version 9.0.0rc1 from the LLVM project.
+   Includes a patch to prevent using double precision floating point instructions, 
+   which are available on some ARMv7em targets (M7f), but not all (M4f).
+ - **libc++** (plus *libc++abi* and *libunwind*), version 9.0.0rc1 from the LLVM project.
+   Some features are disabled, namely threading.
+   Includes [my patch D65348](https://reviews.llvm.org/D65348), enabling `<atomic>` header.
+   
 ## How to use
 
 ### Building the toolchain
@@ -48,12 +50,6 @@ This toolchain has successfully been applied to compile working bare-metal firmw
 However, the toolchain requires some manual work, i.e.
 
 ### libc++
- - The header `<atomic>` is disabled in libc++
-   when the library is built without threadings support.
-   However, atomics are useful on bare-metal even when
-   there is no threading OS, e.g. in presence of interrupts.
-   However, if our newlib build supports C11 atomics,
-   there might be a way to enable `<atomic>`?
  - The header `<iostream>` seems to fail with a missing symbol `locale_t`.
 
 ## Details
@@ -61,6 +57,6 @@ However, the toolchain requires some manual work, i.e.
 ### libcompiler-rt
 The original sources fail to compile,
 because implementations make use of double precision instructions,
-which are unavailable on ARMv7em.
+which are unavailable on ARM M4f.
 The patch excludes those builtins from the build,
 which will then be replaced by generic implementations.

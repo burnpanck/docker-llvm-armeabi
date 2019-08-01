@@ -22,11 +22,14 @@ set -o errexit
 
 source ./config.sh
 
+LLVM_PROJECT_SRC_ROOT="${LLVM_PROJECT_SRC_ROOT:-${SRC_ROOT}}"
+
 CXX_FLAGS="--target=${XTARGET} -mcpu=${XCPU} ${XFPU} ${XABI} ${XOPTFLAGS}"
 CXX_DEFINES=""
 CXX_INCLUDE_PATH=""
 
 COMPILER_FLAGS="${CXX_FLAGS} ${CXX_DEFINES} ${CXX_INCLUDE_PATH}"
+
 
 mkdir -p ${BUILD_ROOT}/compiler-rt
 cd ${BUILD_ROOT}/compiler-rt
@@ -47,8 +50,13 @@ cmake -GNinja -Wno-dev \
    -DCMAKE_AR=${INSTALL_PREFIX}/bin/llvm-ar \
    -DCMAKE_RANLIB=${INSTALL_PREFIX}/bin/llvm-ranlib \
    -DLLVM_CONFIG_PATH=${BUILD_ROOT}/llvm/bin/llvm-config \
-   -DLLVM_ABI_BREAKING_CHECKS=WITH_ASSERTS \
-   -DLLVM_TARGETS_TO_BUILD="ARM" \
+    -DLLVM_ENABLE_SPHINX=False \
+    -DLLVM_INCLUDE_TESTS=False \
+    -DLLVM_ABI_BREAKING_CHECKS=WITH_ASSERTS \
+    -DLLVM_TARGETS_TO_BUILD="ARM" \
+    -DLLVM_DEFAULT_TARGET_TRIPLE="armv7em-none-eabi" \
+    -DLLVM_ENABLE_LLD=ON \
+    -DLLVM_ENABLE_LIBCXX=ON \
    -DCMAKE_SYSROOT=${SYSROOT} \
    -DCMAKE_SYSROOT_LINK=${SYSROOT} \
    -DCMAKE_C_FLAGS="${COMPILER_FLAGS}" \
@@ -65,7 +73,7 @@ cmake -GNinja -Wno-dev \
    -DCOMPILER_RT_DEFAULT_TARGET_ONLY=ON \
    -DCOMPILER_RT_INCLUDE_TESTS=OFF \
    -DCOMPILER_RT_USE_LIBCXX=ON \
-    ${SRC_ROOT}/compiler-rt
+    ${LLVM_PROJECT_SRC_ROOT}/compiler-rt
 cmake --build .
 cmake --build . --target install
 
