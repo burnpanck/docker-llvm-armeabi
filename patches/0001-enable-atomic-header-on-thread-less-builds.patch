@@ -1,0 +1,74 @@
+diff --git a/libcxx/include/__config b/libcxx/include/__config
+index 1ecced9f479..dfa7653ec38 100644
+--- a/libcxx/include/__config
++++ b/libcxx/include/__config
+@@ -1146,18 +1146,17 @@ _LIBCPP_FUNC_VIS extern "C" void __sanitizer_annotate_contiguous_container(
+ #  define _LIBCPP_HAS_GCC_ATOMIC_IMP
+ #endif
+ 
+ #if (!defined(_LIBCPP_HAS_C_ATOMIC_IMP) && \
+      !defined(_LIBCPP_HAS_GCC_ATOMIC_IMP) && \
+-     !defined(_LIBCPP_HAS_EXTERNAL_ATOMIC_IMP)) \
+-     || defined(_LIBCPP_HAS_NO_THREADS)
++     !defined(_LIBCPP_HAS_EXTERNAL_ATOMIC_IMP))
+ #  define _LIBCPP_HAS_NO_ATOMIC_HEADER
+ #else
+ #  ifndef _LIBCPP_ATOMIC_FLAG_TYPE
+ #    define _LIBCPP_ATOMIC_FLAG_TYPE bool
+ #  endif
+-#  ifdef _LIBCPP_FREESTANDING
++#  if defined(_LIBCPP_FREESTANDING) || defined(_LIBCPP_HAS_NO_THREADS)
+ #    define _LIBCPP_ATOMIC_ONLY_USE_BUILTINS
+ #  endif
+ #endif
+ 
+ #ifndef _LIBCPP_DISABLE_UBSAN_UNSIGNED_INTEGER_CHECK
+diff --git a/libcxx/include/atomic b/libcxx/include/atomic
+index afb431eda11..7390b2cd582 100644
+--- a/libcxx/include/atomic
++++ b/libcxx/include/atomic
+@@ -554,13 +554,10 @@ void atomic_signal_fence(memory_order m) noexcept;
+ 
+ #if !defined(_LIBCPP_HAS_NO_PRAGMA_SYSTEM_HEADER)
+ #pragma GCC system_header
+ #endif
+ 
+-#ifdef _LIBCPP_HAS_NO_THREADS
+-# error <atomic> is not supported on this single threaded system
+-#endif
+ #ifdef _LIBCPP_HAS_NO_ATOMIC_HEADER
+ # error <atomic> is not implemented
+ #endif
+ #ifdef kill_dependency
+ # error C++ standard library is incompatible with <stdatomic.h>
+diff --git a/libcxx/src/memory.cpp b/libcxx/src/memory.cpp
+index c8c00383cf9..d41c897b4b5 100644
+--- a/libcxx/src/memory.cpp
++++ b/libcxx/src/memory.cpp
+@@ -132,11 +132,11 @@ __shared_weak_count::__get_deleter(const type_info&) const _NOEXCEPT
+     return nullptr;
+ }
+ 
+ #endif  // _LIBCPP_NO_RTTI
+ 
+-#if !defined(_LIBCPP_HAS_NO_ATOMIC_HEADER)
++#if !defined(_LIBCPP_HAS_NO_THREADS)
+ 
+ _LIBCPP_SAFE_STATIC static const std::size_t __sp_mut_count = 16;
+ _LIBCPP_SAFE_STATIC static __libcpp_mutex_t mut_back[__sp_mut_count] =
+ {
+     _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER, _LIBCPP_MUTEX_INITIALIZER,
+@@ -183,11 +183,11 @@ __get_sp_mut(const void* p)
+         &mut_back[12], &mut_back[13], &mut_back[14], &mut_back[15]
+     };
+     return muts[hash<const void*>()(p) & (__sp_mut_count-1)];
+ }
+ 
+-#endif // !defined(_LIBCPP_HAS_NO_ATOMIC_HEADER)
++#endif // !defined(_LIBCPP_HAS_NO_THREADS)
+ 
+ void
+ declare_reachable(void*)
+ {
+ }
+
